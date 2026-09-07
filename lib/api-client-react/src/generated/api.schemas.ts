@@ -73,14 +73,24 @@ export interface GenerateIdeasInput {
   /** @maxLength 400 */
   contributionDetail: string;
   /**
-     * @minLength 1
-     * @maxLength 80
+     * @minItems 1
+     * @maxItems 10
+     * @items.minLength 1
+     * @items.maxLength 80
      */
-  time: string;
-  /** @maxLength 100 */
-  outcome: string;
-  /** @maxLength 100 */
-  mode: string;
+  time: string[];
+  /**
+     * @maxItems 10
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  outcome: string[];
+  /**
+     * @maxItems 10
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  mode: string[];
   kidFriendly: boolean;
   country?: GenerateIdeasInputCountry;
 }

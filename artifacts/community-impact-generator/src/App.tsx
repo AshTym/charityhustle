@@ -5,6 +5,7 @@ import { Charities } from './pages/Charities';
 import { Contact } from './pages/Contact';
 import { HeartHandshake, ArrowRight, Bookmark, Menu, Globe, ChevronDown } from 'lucide-react';
 import { COUNTRIES, CountryCode } from './lib/data';
+import { trackEvent } from './lib/analytics';
 import './index.css';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,15 @@ function Layout({ children }: { children: React.ReactNode }) {
           
           <div className="country-picker">
             <Globe size={14} className="country-icon" />
-            <select value={country} onChange={(e) => setCountry(e.target.value as CountryCode)} aria-label="Select country">
+            <select
+              value={country}
+              onChange={(e) => {
+                const nextCountry = e.target.value as CountryCode;
+                trackEvent('country_changed', { from: country, to: nextCountry });
+                setCountry(nextCountry);
+              }}
+              aria-label="Select country"
+            >
               {Object.entries(COUNTRIES).map(([code, name]) => (
                 <option key={code} value={code}>{name}</option>
               ))}

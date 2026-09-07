@@ -1,0 +1,27 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/charity-hustle-video/"
+title = "Charity Hustle — Promotional Film"
+description = "A 16:9 animated promotional film presenting Charity Hustle, its responsible use of AI, and its potential to widen participation across the charity sector."
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/charity-hustle-video/" ]
+localPort = 24805
+
+[services.development]
+run = "pnpm --filter @workspace/charity-hustle-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/charity-hustle-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/charity-hustle-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24805"
+BASE_PATH = "/charity-hustle-video/"

@@ -26,9 +26,9 @@ export type IdeaQuestionnaireSnapshot = {
   skills: string[];
   passionsDetail: string;
   contributionDetail: string;
-  time: string;
-  outcome: string;
-  mode: string;
+  time: string[];
+  outcome: string[];
+  mode: string[];
   kidFriendly: boolean;
   country?: string;
 };

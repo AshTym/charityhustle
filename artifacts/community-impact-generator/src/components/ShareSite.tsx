@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Copy, Share2 } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaTiktok, FaXTwitter } from 'react-icons/fa6';
 import { Link } from 'wouter';
+import { trackEvent } from '../lib/analytics';
 
 const shareText = 'Find a practical way to turn your skills and spare time into community impact with Charity Hustle.';
 
@@ -20,6 +21,7 @@ export function ShareSite() {
   const copyLink = async (platform?: string) => {
     try {
       await navigator.clipboard.writeText(shareUrl);
+      trackEvent('site_shared', { method: platform?.toLowerCase() ?? 'copy' });
       showStatus(platform ? `Link copied — paste it into ${platform}.` : 'Website link copied.');
     } catch {
       showStatus('Select and copy the website address from your browser.');
@@ -30,6 +32,7 @@ export function ShareSite() {
     if (canNativeShare) {
       try {
         await navigator.share({ title: 'Charity Hustle', text: shareText, url: shareUrl });
+        trackEvent('site_shared', { method: 'native' });
         showStatus('Thanks for sharing Charity Hustle.');
       } catch {
         // Closing the native share sheet is not an error that needs surfacing.
@@ -55,6 +58,7 @@ export function ShareSite() {
             href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent('site_share_selected', { method: 'facebook' })}
             aria-label="Share Charity Hustle on Facebook"
           >
             <FaFacebookF /> Facebook
@@ -63,6 +67,7 @@ export function ShareSite() {
             href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent('site_share_selected', { method: 'x' })}
             aria-label="Share Charity Hustle on X"
           >
             <FaXTwitter /> X

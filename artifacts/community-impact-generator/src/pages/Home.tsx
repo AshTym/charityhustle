@@ -17,15 +17,16 @@ import { generateIdeas, getIdea } from '@workspace/api-client-react';
 import { useAppContext } from '../context/AppContext';
 import { interests, skills, times, outcomes, modes, type Idea } from '../lib/data';
 import { ShareSite } from '../components/ShareSite';
+import { trackEvent } from '../lib/analytics';
 
 type Answers = {
   interests: string[];
   skills: string[];
   passionsDetail: string;
   contributionDetail: string;
-  time: string;
-  outcome: string;
-  mode: string;
+  time: string[];
+  outcome: string[];
+  mode: string[];
   kidFriendly: boolean;
 };
 
@@ -34,9 +35,9 @@ const initialAnswers: Answers = {
   skills: [],
   passionsDetail: '',
   contributionDetail: '',
-  time: '',
-  outcome: '',
-  mode: '',
+  time: [],
+  outcome: [],
+  mode: [],
   kidFriendly: false,
 };
 
@@ -78,8 +79,8 @@ function Questionnaire({
   error: string;
   generating: boolean;
 }) {
-  const completed = [answers.interests.length > 0, answers.skills.length > 0, Boolean(answers.time), Boolean(answers.outcome), Boolean(answers.mode)].filter(Boolean).length;
-  const toggleMulti = (field: 'interests' | 'skills', value: string) => {
+  const completed = [answers.interests, answers.skills, answers.time, answers.outcome, answers.mode].filter((values) => values.length > 0).length;
+  const toggleMulti = (field: 'interests' | 'skills' | 'time' | 'outcome' | 'mode', value: string) => {
     setAnswers((current) => {
       const next = current[field].includes(value)
         ? current[field].filter((item) => item !== value)
@@ -87,10 +88,6 @@ function Questionnaire({
       return { ...current, [field]: next };
     });
   };
-  const choose = (field: 'time' | 'outcome' | 'mode', value: string) => {
-    setAnswers((current) => ({ ...current, [field]: value }));
-  };
-
   return (
     <div className="questionnaire-wrap" id="questionnaire">
       <div className="questionnaire" data-testid="questionnaire">
@@ -142,21 +139,21 @@ function Questionnaire({
           </label>
         </div>
         <div className="question">
-          <div className="question-label"><span>How much room is in your week?</span></div>
+          <div className="question-label"><span>How much room is in your week?</span><small>Choose any</small></div>
           <div className="choice-grid">
-            {times.map((item) => <ChoiceButton key={item} label={item} selected={answers.time === item} onClick={() => choose('time', item)} testId={`choice-time-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
+            {times.map((item) => <ChoiceButton key={item} label={item} selected={answers.time.includes(item)} onClick={() => toggleMulti('time', item)} testId={`choice-time-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
           </div>
         </div>
         <div className="question">
-          <div className="question-label"><span>What would feel good to get back?</span></div>
+          <div className="question-label"><span>What would feel good to get back?</span><small>Choose any</small></div>
           <div className="choice-grid">
-            {outcomes.map((item) => <ChoiceButton key={item} label={item} selected={answers.outcome === item} onClick={() => choose('outcome', item)} testId={`choice-outcome-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
+            {outcomes.map((item) => <ChoiceButton key={item} label={item} selected={answers.outcome.includes(item)} onClick={() => toggleMulti('outcome', item)} testId={`choice-outcome-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
           </div>
         </div>
         <div className="question">
-          <div className="question-label"><span>How would you like to help?</span></div>
+          <div className="question-label"><span>How would you like to help?</span><small>Choose any</small></div>
           <div className="choice-grid">
-            {modes.map((item) => <ChoiceButton key={item} label={item} selected={answers.mode === item} onClick={() => choose('mode', item)} testId={`choice-mode-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
+            {modes.map((item) => <ChoiceButton key={item} label={item} selected={answers.mode.includes(item)} onClick={() => toggleMulti('mode', item)} testId={`choice-mode-${item.toLowerCase().replaceAll(' ', '-')}`} />)}
           </div>
         </div>
         <div className="question">
@@ -185,6 +182,10 @@ function IdeaCard({ idea, saved, onSave, shared }: { idea: Idea; saved: boolean;
   const copyIdeaLink = async (platform?: string) => {
     try {
       await navigator.clipboard.writeText(permanentUrl);
+      trackEvent('idea_shared', {
+        method: platform?.toLowerCase() ?? 'copy',
+        cause: idea.tag,
+      });
       setShareStatus(platform ? `Link copied — paste it into ${platform}.` : 'Idea link copied.');
     } catch {
       setShareStatus('Copy the idea URL from your browser address bar.');
@@ -202,7 +203,12 @@ function IdeaCard({ idea, saved, onSave, shared }: { idea: Idea; saved: boolean;
         <h3>{idea.title}</h3>
         <p className="idea-summary">{idea.description}</p>
         <div className="idea-meta"><span><Clock3 size={13} /> {idea.time}</span><span>Start small</span></div>
-        <Link href={`/charities?cause=${ctxQuery}`} className="idea-directory-link" data-testid={`link-directory-${idea.id}`}>
+        <Link
+          href={`/charities?cause=${ctxQuery}`}
+          className="idea-directory-link"
+          data-testid={`link-directory-${idea.id}`}
+          onClick={() => trackEvent('directory_opened', { source: 'idea', cause: idea.tag })}
+        >
           Find organisations <ArrowRight size={14} />
         </Link>
         <div className="idea-share">
@@ -212,6 +218,7 @@ function IdeaCard({ idea, saved, onSave, shared }: { idea: Idea; saved: boolean;
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(permanentUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent('idea_share_selected', { method: 'facebook', cause: idea.tag })}
               aria-label={`Share ${idea.title} on Facebook`}
             >
               <FaFacebookF />
@@ -220,6 +227,7 @@ function IdeaCard({ idea, saved, onSave, shared }: { idea: Idea; saved: boolean;
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(permanentUrl)}&text=${encodeURIComponent(shareText)}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent('idea_share_selected', { method: 'x', cause: idea.tag })}
               aria-label={`Share ${idea.title} on X`}
             >
               <FaXTwitter />
@@ -295,6 +303,7 @@ export function Home() {
         if (cancelled) return;
         setVisibleIdeas([idea]);
         setSubmitted(true);
+        trackEvent('shared_idea_opened', { cause: idea.tag });
         window.setTimeout(
           () => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
           80,
@@ -322,7 +331,7 @@ export function Home() {
   };
 
   const handleSubmit = async () => {
-    if (!answers.interests.length || !answers.time) {
+    if (!answers.interests.length || !answers.time.length) {
       setError('Choose at least one cause and the amount of time you can honestly give.');
       scrollTo('questionnaire');
       return;
@@ -333,17 +342,37 @@ export function Home() {
     setSubmitted(false);
     setSharedIdeaId(null);
     window.history.replaceState({}, '', import.meta.env.BASE_URL);
+    const generationStartedAt = performance.now();
+    trackEvent('ideas_generation_started', {
+      country,
+      primary_cause: answers.interests[0],
+      cause_count: answers.interests.length,
+      skill_count: answers.skills.length,
+      time_count: answers.time.length,
+      outcome_count: answers.outcome.length,
+      mode_count: answers.mode.length,
+      kid_friendly: answers.kidFriendly,
+    });
 
     try {
       const result = await generateIdeas({ ...answers, country });
       setVisibleIdeas(result.ideas);
       setSubmitted(true);
+      trackEvent('ideas_generated', {
+        country,
+        idea_count: result.ideas.length,
+        duration_ms: Math.round(performance.now() - generationStartedAt),
+      });
       window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     } catch (requestError) {
       const rateLimited = requestError instanceof Error && requestError.message.includes('HTTP 429');
       setError(rateLimited
         ? 'You’ve created several sets of ideas. Please try again in an hour.'
         : 'Fresh ideas could not be created just now. Please wait a moment and try again.');
+      trackEvent('ideas_generation_failed', {
+        country,
+        reason: rateLimited ? 'rate_limited' : 'service_error',
+      });
       scrollTo('questionnaire');
     } finally {
       setGenerating(false);
@@ -363,6 +392,10 @@ export function Home() {
   const copyPlan = () => {
     const plan = `My Charity Hustle starting point: ${visibleIdeas[0].title}. First step: ${visibleIdeas[0].first}`;
     if (navigator.clipboard) void navigator.clipboard.writeText(plan);
+    trackEvent('first_step_copy_selected', {
+      cause: visibleIdeas[0].tag,
+      shared_idea: Boolean(sharedIdeaId),
+    });
     setSavedMessage('Your first step is ready to share.');
     window.setTimeout(() => setSavedMessage(''), 2800);
   };
@@ -370,7 +403,7 @@ export function Home() {
   return (
     <>
       <section className="hero" aria-labelledby="hero-title">
-        <div>
+        <div className="hero-intro">
           <div className="eyebrow"><span className="eyebrow-line" /> A practical guide to doing good</div>
           <h1 id="hero-title">There is a place for <em>your</em> good.</h1>
           <p className="hero-copy">Turn the things you already care about, and the skills people already trust, into a community contribution that feels possible.</p>
@@ -405,7 +438,14 @@ export function Home() {
               <div className="result-count" data-testid="text-results-count"><strong>{visibleIdeas.length}</strong> ideas shaped around your life.</div>
             </div>
             <div className="ideas-grid">
-              {visibleIdeas.map((idea) => <IdeaCard key={idea.id} idea={idea} saved={saved.has(idea.id)} onSave={() => toggleSaved(idea.id)} shared={idea.id === sharedIdeaId} />)}
+              {visibleIdeas.map((idea) => <IdeaCard key={idea.id} idea={idea} saved={saved.has(idea.id)} onSave={() => {
+                trackEvent('idea_save_changed', {
+                  action: saved.has(idea.id) ? 'removed' : 'saved',
+                  cause: idea.tag,
+                  country,
+                });
+                toggleSaved(idea.id);
+              }} shared={idea.id === sharedIdeaId} />)}
             </div>
             <div className="next-step">
               <div><h3>Make one idea real before Friday.</h3></div>

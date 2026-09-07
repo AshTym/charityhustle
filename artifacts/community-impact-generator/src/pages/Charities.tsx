@@ -3,6 +3,7 @@ import { useSearch } from 'wouter';
 import { ExternalLink } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { CHARITIES, COUNTRIES } from '../lib/data';
+import { trackEvent } from '../lib/analytics';
 
 const coreTags = ['All', 'Community', 'Skills & behind the scenes', 'Crisis support', 'Nature & climate', 'Animals', 'Young people', 'Older neighbours', 'Food security', 'First Nations & Indigenous'];
 
@@ -69,6 +70,17 @@ export function Charities() {
     return c.tags.includes(filter);
   });
 
+  const chooseFilter = (tag: string) => {
+    setFilter(tag);
+    trackEvent('directory_filter_changed', {
+      country,
+      cause: tag,
+      result_count: tag === 'All'
+        ? countryCharities.length
+        : countryCharities.filter((charity) => charity.tags.includes(tag)).length,
+    });
+  };
+
   return (
     <div className="directory-page">
       <section className="dir-hero">
@@ -86,7 +98,7 @@ export function Charities() {
               <button 
                 key={tag} 
                 className={`dir-filter ${filter === tag ? 'active' : ''}`}
-                onClick={() => setFilter(tag)}
+                onClick={() => chooseFilter(tag)}
               >
                 {tag}
               </button>
@@ -97,7 +109,7 @@ export function Charities() {
         {filtered.length === 0 && (
           <div className="dir-empty">
             <p>We couldn't find a perfect match for "{filter}" in {COUNTRIES[country]}.</p>
-            <button className="dir-filter active" onClick={() => setFilter('All')}>Show all organisations</button>
+            <button className="dir-filter active" onClick={() => chooseFilter('All')}>Show all organisations</button>
           </div>
         )}
 
@@ -113,7 +125,17 @@ export function Charities() {
                 {charity.tags.map(t => <span key={t} className="dir-tag">{t}</span>)}
               </div>
 
-              <a href={charity.url} target="_blank" rel="noopener noreferrer" className="dir-visit-btn">
+              <a
+                href={charity.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dir-visit-btn"
+                onClick={() => trackEvent('organisation_visited', {
+                  country,
+                  organisation: charity.id,
+                  cause: filter,
+                })}
+              >
                 Offer your skills <ExternalLink size={14} />
               </a>
             </article>

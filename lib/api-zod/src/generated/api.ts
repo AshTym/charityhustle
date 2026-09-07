@@ -65,11 +65,17 @@ export const generateIdeasBodyPassionsDetailMax = 400;
 
 export const generateIdeasBodyContributionDetailMax = 400;
 
-export const generateIdeasBodyTimeMax = 80;
+export const generateIdeasBodyTimeItemMax = 80;
 
-export const generateIdeasBodyOutcomeMax = 100;
+export const generateIdeasBodyTimeMax = 10;
 
-export const generateIdeasBodyModeMax = 100;
+export const generateIdeasBodyOutcomeItemMax = 100;
+
+export const generateIdeasBodyOutcomeMax = 10;
+
+export const generateIdeasBodyModeItemMax = 100;
+
+export const generateIdeasBodyModeMax = 10;
 
 
 
@@ -78,9 +84,9 @@ export const GenerateIdeasBody = zod.object({
   "skills": zod.array(zod.string().min(1).max(generateIdeasBodySkillsItemMax)).max(generateIdeasBodySkillsMax),
   "passionsDetail": zod.string().max(generateIdeasBodyPassionsDetailMax),
   "contributionDetail": zod.string().max(generateIdeasBodyContributionDetailMax),
-  "time": zod.string().min(1).max(generateIdeasBodyTimeMax),
-  "outcome": zod.string().max(generateIdeasBodyOutcomeMax),
-  "mode": zod.string().max(generateIdeasBodyModeMax),
+  "time": zod.array(zod.string().min(1).max(generateIdeasBodyTimeItemMax)).min(1).max(generateIdeasBodyTimeMax),
+  "outcome": zod.array(zod.string().min(1).max(generateIdeasBodyOutcomeItemMax)).max(generateIdeasBodyOutcomeMax),
+  "mode": zod.array(zod.string().min(1).max(generateIdeasBodyModeItemMax)).max(generateIdeasBodyModeMax),
   "kidFriendly": zod.boolean(),
   "country": zod.enum(['AU', 'NZ', 'UK', 'US', 'CA']).optional()
 })

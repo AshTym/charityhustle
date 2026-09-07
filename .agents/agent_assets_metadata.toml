@@ -1,0 +1,10 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "mP8qehEFuEEgB6DGzOUeC"
+uri = "file://artifacts/charity-hustle-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "Charity Hustle background music"
+description = "Generated music: Cinematic uplifting orchestral instrumental background music scoring a warm nonprofit technology brand film. Felt piano, soft strings, restrained organic percussion and subtle acoust…"
+logical_id = "9bc68f19-71e7-4aa0-825c-20978d188f35"

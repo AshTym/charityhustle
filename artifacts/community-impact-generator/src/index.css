@@ -47,6 +47,7 @@ a { color: inherit; text-decoration: none; }
 .mobile-menu { display: none; border: 0; background: transparent; color: var(--ink); }
 
 .hero { max-width: 1240px; margin: 0 auto; padding: 67px 28px 95px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(440px, 530px); gap: 75px; align-items: center; }
+.hero-intro { position: relative; top: -28px; }
 .eyebrow { display: flex; gap: 10px; align-items: center; color: var(--coral-dark); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; font-weight: 500; }
 .eyebrow-line { width: 30px; height: 1px; background: var(--coral); }
 .hero h1 { font-family: var(--font-display); font-size: clamp(55px, 7vw, 100px); line-height: .94; letter-spacing: -.065em; font-weight: 600; margin: 22px 0 27px; max-width: 600px; }
@@ -220,6 +221,7 @@ a { color: inherit; text-decoration: none; }
 .questionnaire { animation-delay: .18s; }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 65px; padding-top: 48px; }
+  .hero-intro { top: 0; }
   .hero-copy { max-width: 560px; }
   .questionnaire { max-width: 650px; }
   .questionnaire-wrap { max-width: 680px; }

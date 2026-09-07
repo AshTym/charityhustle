@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/charity-hustle-deck/"
+title = "Charity Hustle — Small Actions, Real Ripples"
+description = "A 12-slide promotional presentation for Charity Hustle, explaining its AI-powered experience, responsible foundations, and potential value across the charity sector."
+version = "1.0.0"
+id = "artifacts/charity-hustle-deck"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/charity-hustle-deck/" ]
+localPort = 25093
+
+[services.development]
+run = "pnpm --filter @workspace/charity-hustle-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/charity-hustle-deck", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/charity-hustle-deck/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25093"
+BASE_PATH = "/charity-hustle-deck/"

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowRight, CheckCircle2, Mail, MessageCircle } from 'lucide-react';
 import { submitContact } from '@workspace/api-client-react';
+import { trackEvent } from '../lib/analytics';
 
 type ContactFields = {
   name: string;
@@ -65,9 +66,11 @@ export function Contact() {
       setForm(emptyForm);
       setStatus('sent');
       setFeedback(result.message);
+      trackEvent('contact_submitted');
     } catch {
       setStatus('error');
       setFeedback('Your message could not be delivered. Please check your details and try again.');
+      trackEvent('contact_failed');
     }
   };
 

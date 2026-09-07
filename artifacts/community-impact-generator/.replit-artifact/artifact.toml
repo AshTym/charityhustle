@@ -20,6 +20,10 @@ serve = "static"
 publicDir = "artifacts/community-impact-generator/dist/public"
 
 [[services.production.rewrites]]
+from = "/slidedeck/*"
+to = "/slidedeck/index.html"
+
+[[services.production.rewrites]]
 from = "/*"
 to = "/index.html"
 
