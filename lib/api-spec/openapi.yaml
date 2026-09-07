@@ -1,0 +1,303 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: contact
+    description: Contact form operations
+  - name: ideas
+    description: AI-generated community impact ideas
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit a contact message
+      description: Validates and sends a message from the Charity Hustle contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "200":
+          description: Message accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResult"
+        "400":
+          description: Invalid submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many submissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Delivery failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ideas/generate:
+    post:
+      operationId: generateIdeas
+      tags: [ideas]
+      summary: Generate unique community impact ideas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateIdeasInput"
+      responses:
+        "200":
+          description: Fresh ideas generated and saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdeasResult"
+        "400":
+          description: Invalid questionnaire
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many generation requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: AI generation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ideas/{id}:
+    get:
+      operationId: getIdea
+      tags: [ideas]
+      summary: Retrieve a saved generated idea
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Saved idea
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedIdea"
+        "404":
+          description: Idea not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ContactInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        subject:
+          type: string
+          minLength: 2
+          maxLength: 140
+        message:
+          type: string
+          minLength: 10
+          maxLength: 5000
+        website:
+          type: string
+          maxLength: 200
+          description: Honeypot field; legitimate users leave this blank
+      required:
+        - name
+        - email
+        - subject
+        - message
+    ContactResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    GenerateIdeasInput:
+      type: object
+      additionalProperties: false
+      properties:
+        interests:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+        skills:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+        passionsDetail:
+          type: string
+          maxLength: 400
+        contributionDetail:
+          type: string
+          maxLength: 400
+        time:
+          type: string
+          minLength: 1
+          maxLength: 80
+        outcome:
+          type: string
+          maxLength: 100
+        mode:
+          type: string
+          maxLength: 100
+        kidFriendly:
+          type: boolean
+        country:
+          type: string
+          enum: [AU, NZ, UK, US, CA]
+      required:
+        - interests
+        - skills
+        - passionsDetail
+        - contributionDetail
+        - time
+        - outcome
+        - mode
+        - kidFriendly
+    GeneratedIdea:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        tag:
+          type: string
+          minLength: 1
+          maxLength: 80
+        title:
+          type: string
+          minLength: 4
+          maxLength: 100
+        description:
+          type: string
+          minLength: 100
+          maxLength: 1200
+        time:
+          type: string
+          minLength: 2
+          maxLength: 80
+        first:
+          type: string
+          minLength: 60
+          maxLength: 900
+        why:
+          type: string
+          minLength: 60
+          maxLength: 900
+        impact:
+          type: string
+          minLength: 60
+          maxLength: 900
+        potential:
+          type: string
+          minLength: 60
+          maxLength: 900
+        expand:
+          type: string
+          minLength: 60
+          maxLength: 900
+      required:
+        - id
+        - tag
+        - title
+        - description
+        - time
+        - first
+        - why
+        - impact
+        - potential
+        - expand
+    IdeasResult:
+      type: object
+      additionalProperties: false
+      properties:
+        generationId:
+          type: string
+          format: uuid
+        ideas:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            $ref: "#/components/schemas/GeneratedIdea"
+      required:
+        - generationId
+        - ideas
+

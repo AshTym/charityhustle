@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Charity Hustle"
+description = "A warm, motivating generator that helps people turn their skills, time, and interests into practical community and charity contributions."
+version = "1.0.0"
+id = "artifacts/community-impact-generator"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22494
+
+[services.development]
+run = "pnpm --filter @workspace/community-impact-generator run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/community-impact-generator", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/community-impact-generator/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22494"
+BASE_PATH = "/"
