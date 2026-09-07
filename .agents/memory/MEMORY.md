@@ -1,3 +1,4 @@
 - [Non-destructive uniqueness changes](non-destructive-unique-schema.md) — use explicit unique indexes when evolving populated tables so schema sync never offers to truncate data.
 - [GitHub HTML upload filtering](github-html-upload-filtering.md) — source entry HTML avoids module script tags because the connector blocks those payloads; Vite injects them for builds.
+- [GitHub connector and LFS](github-connector-lfs.md) — connector-based tree syncs must upload Git object blobs, not working-tree bytes, so LFS files remain pointers.
 - [Video artifact manifest recovery](video-artifact-manifest-recovery.md) — after delegated video builds, verify the artifact manifest still retains its managed preview service before restarting.
